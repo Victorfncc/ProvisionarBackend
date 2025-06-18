@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import paramiko
 import threading
@@ -6,14 +6,15 @@ import time
 import os
 
 app = Flask(__name__)
-CORS(app)  # Libera CORS para todas origens - para produção configure melhor
+# Libera CORS só para seu front do GitHub Pages
+CORS(app, origins=["https://victorfncc.github.io"])
 
 ssh_client = None
 ssh_shell = None
 lock = threading.Lock()
 
 host = "10.11.104.2"
-port = 22
+port = 22  # se usar telnet porta 23, mas paramiko SSH usa 22
 user = "root"
 password = "berg88453649"
 
@@ -28,11 +29,6 @@ def send_command(cmd, sleep=1.5):
         while ssh_shell.recv_ready():
             output += ssh_shell.recv(65535).decode("utf-8")
         return output
-
-@app.route("/")
-def index():
-    connected = ssh_client is not None and ssh_shell is not None
-    return render_template("index.html", connected=connected)
 
 @app.route("/connect", methods=["POST"])
 def connect():
