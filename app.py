@@ -1,16 +1,19 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import paramiko
 import threading
 import time
+import os
 
 app = Flask(__name__)
+CORS(app)  # Libera CORS para todas origens - para produção configure melhor
 
 ssh_client = None
 ssh_shell = None
 lock = threading.Lock()
 
 host = "10.11.104.2"
-port = 22  # ajuste para 23 se for telnet, mas paramiko é SSH padrão na 22
+port = 22
 user = "root"
 password = "berg88453649"
 
@@ -43,7 +46,7 @@ def connect():
         ssh_shell = ssh_client.invoke_shell()
         time.sleep(1)
         while ssh_shell.recv_ready():
-            ssh_shell.recv(65535)  # limpa buffer inicial
+            ssh_shell.recv(65535)
         return jsonify({"status": "connected"})
     except Exception as e:
         ssh_client = None
@@ -70,8 +73,6 @@ def command():
         return jsonify({"output": "⚠️ Nenhum comando enviado."})
     output = send_command(cmd)
     return jsonify({"output": output})
-
-import os
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
